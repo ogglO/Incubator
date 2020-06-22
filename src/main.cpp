@@ -2,7 +2,7 @@
 #include <definitions.h>
 #include <sharedVars.h>
 #include <hw.h>
-#include <TFT.h>
+#include <display.h>
 #include <sensors.h>
 #include <controller.h>
 

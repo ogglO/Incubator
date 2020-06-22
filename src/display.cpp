@@ -1,4 +1,4 @@
-#include <TFT.h>
+#include <display.h>
 #include <definitions.h>
 #include <sharedVars.h>
 #include <Adafruit_GFX.h>    // Adafruit Grafik-Bibliothek
