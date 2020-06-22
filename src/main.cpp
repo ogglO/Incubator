@@ -18,6 +18,7 @@ const uint16_t timingSensors = TIMING_SENSORS;         //ms //read data then req
 const uint16_t timingControllerHeater = TIMING_CONTROLLER_HEATER;   //ms //inner control loop
 const uint16_t timingControllerApp = TIMING_CONTROLLER_APP;      //ms //outer controll loop
 const uint16_t timingEncoder = TIMING_ENCODER;             //ms
+const uint16_t timingStats = 1000;
 
 //timing vars
 uint32_t timingDisplayLast;
@@ -25,6 +26,7 @@ uint32_t timingSensorsLast;
 uint32_t timingControllerHeaterLast;
 uint32_t timingControllerAppLast;
 uint32_t timingEncoderLast;
+uint32_t timingStatsLast;
 
 bool firstStartup = 1;
 
@@ -54,6 +56,11 @@ void loop()
     {
         drawDisplayDynamic(encoderValue);
         timingDisplayLast = millis();
+    }
+    else if ((millis() - timingStatsLast) >= timingStats)
+    {
+        //do stats here
+        timingStatsLast = millis();
     }
     else if ((millis() - timingSensorsLast) >= timingSensors)
     {
