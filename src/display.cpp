@@ -51,6 +51,7 @@ void drawDisplayDynamic(int16_t counter)
     TFT.print(temperatureHeaterCurrent, 1);
     TFT.print("/");
     TFT.print(temperatureHeaterTarget, 1);
+    TFT.print(" C");
 
     //humidity
     currentY += (2 + 8) * textSize;
