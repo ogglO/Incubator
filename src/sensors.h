@@ -1,3 +1,7 @@
 #pragma once
 void setupSensors();
-void getSensorData();
+void updateSensorData();
+float getTemperatureAppCurrent();
+float getTemperatureHeaterCurrent();
+float getHumidity();
+bool getStatusLidClosed();

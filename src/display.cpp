@@ -1,6 +1,7 @@
-#include <display.h>
-#include <definitions.h>
-#include <sharedVars.h>
+#include "display.h"
+#include "definitions.h"
+#include "controller.h"
+#include "sensors.h"
 #include <Adafruit_GFX.h>    // Adafruit Grafik-Bibliothek
 #include <Adafruit_ST7735.h> // Adafruit ST7735-Bibliothek
 
@@ -21,7 +22,7 @@ uint16_t fontMinWidth = 6;       //multiply by text size
 uint16_t fgColor = ST77XX_WHITE; //default foreground color
 uint16_t bgColor = ST77XX_BLACK; //default bgColor
 
-void setupTFT()
+void setupDisplay()
 {
     TFT.initR(INITR_BLACKTAB); // init ST7735-Chip
     TFT.setRotation(2);
@@ -48,19 +49,19 @@ void drawDisplayDynamic(int16_t counter)
     currentY += (2 + 8) * textSize;
     currentY += 40;
     TFT.setCursor(getPosFromRight(11), currentY);
-    TFT.print(temperatureHeaterCurrent, 1);
+    TFT.print(getTemperatureHeaterCurrent(), 1);
     TFT.print("/");
-    TFT.print(temperatureHeaterTarget, 1);
+    TFT.print(getTemperatureHeaterTarget(), 1);
     TFT.print(" C");
 
     //humidity
     currentY += (2 + 8) * textSize;
     TFT.setCursor(getPosFromRight(5), currentY);
-    if (humidity < 100.0)
+    if (getHumidity() < 100.0)
     {
         TFT.print(" ");
     }
-    TFT.print((int)(humidity + 0.5)); //+0.5 for correct rounding
+    TFT.print((int)(getHumidity() + 0.5)); //+0.5 for correct rounding
     TFT.print(" %");
 
     //Stepper
@@ -71,7 +72,7 @@ void drawDisplayDynamic(int16_t counter)
     //lid status
     currentY += (2 + 8) * textSize;
     TFT.setCursor(getPosFromRight(11), currentY);
-    if (statusLidClosed)
+    if (getStatusLidClosed())
     {
         TFT.setTextColor(ST77XX_GREEN, bgColor);
         TFT.print("geschlossen");
@@ -85,27 +86,24 @@ void drawDisplayDynamic(int16_t counter)
     //controller status
     currentY += (2 + 8) * textSize;
     TFT.setCursor(getPosFromRight(8), currentY);
-    switch (controllerState) {
-        case 0:
-            TFT.setTextColor(ST77XX_RED, bgColor);
-            TFT.print(" inaktiv");
-            break;
-        case 1:
-            TFT.setTextColor(ST77XX_YELLOW, bgColor);
-            TFT.print("pausiert");
-            break;
-        case 2:
-            TFT.setTextColor(ST77XX_GREEN, bgColor);
-            TFT.print("   aktiv");
-            break;
+    switch (controllerState())
+    {
+    case 0:
+        TFT.setTextColor(ST77XX_RED, bgColor);
+        TFT.print(" inaktiv");
+        break;
+    case 2:
+        TFT.setTextColor(ST77XX_YELLOW, bgColor);
+        TFT.print("pausiert");
+        break;
+    case 1:
+        TFT.setTextColor(ST77XX_GREEN, bgColor);
+        TFT.print("   aktiv");
+        break;
     }
-    currentY += (2 + 8) * textSize;
-    TFT.setCursor(getPosFromRight(8), currentY);
-    TFT.setTextColor(ST77XX_GREEN, bgColor);
-    TFT.print("gesperrt");
 
     //debug counter
-    currentY += (2+8)*textSize;
+    currentY += (2 + 8) * textSize;
     TFT.setCursor(getPosFromRight(8), currentY);
     TFT.print(counter);
 
@@ -113,18 +111,22 @@ void drawDisplayDynamic(int16_t counter)
     TFT.setCursor(48, 10);
     TFT.setTextSize(textSize = 3);
     TFT.setTextColor(ST77XX_RED, bgColor);
-    if (temperatureAppCurrent < -100.0) //error value = -127.0
+    if (getTemperatureAppCurrent() < -100.0) //error value = -127.0
     {
         TFT.print("err");
     }
     else
     {
-        TFT.print(temperatureAppCurrent, 1);
+        if (abs(getTemperatureAppCurrent() - TEMPERATURE_APP_TARGET) <= TEMPERATURE_APP_TOLERANCE)
+        {
+            TFT.setTextColor(ST7735_GREEN, bgColor);
+        }
+        TFT.print(getTemperatureAppCurrent(), 1);
     }
-    
+
     TFT.setTextColor(fgColor);
     TFT.setCursor(48, 10 + textSize * 8 + 2 + 2);
-    TFT.print(temperatureAppTarget, 1);
+    TFT.print(TEMPERATURE_APP_TARGET, 1);
 }
 
 void drawDisplayStatic()

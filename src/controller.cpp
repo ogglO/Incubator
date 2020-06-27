@@ -1,17 +1,17 @@
-#include <controller.h>
-#include <definitions.h>
-#include <sharedVars.h>
+#include "controller.h"
+#include "definitions.h"
+#include "sensors.h"
 
 //controller setup
 float temperatureAppTarget = TEMPERATURE_APP_TARGET;
 const float kp = CONTROLLER_KP;
 const float ki = CONTROLLER_KI;
 const float kd = CONTROLLER_KD;
-const float controllerOutputLimitHeater = CONTROLLER_OUTPUT_LIMIT_HEATER;  //pwm ratio //20 kHz setting 800 is max
-const float controllerOutputLimitApp = CONTROLLER_OUTPUT_LIMIT_APP;    //°C 
-bool controllerEnabled = 0; //start inactive
+const float controllerOutputLimitHeater = CONTROLLER_OUTPUT_LIMIT_HEATER; //pwm ratio //20 kHz setting 800 is max
+const float controllerOutputLimitApp = CONTROLLER_OUTPUT_LIMIT_APP;       //°C
+bool controllerEnabled = CONTROLLER_START_ACTIVE;
+char controllerCurrentState;
 float temperatureHeaterTarget = temperatureAppTarget;
-char controllerState = 0;
 
 //controller vars
 float controllerOutputHeater = 0;
@@ -24,35 +24,38 @@ float integral;
 //set inital value for inner control loop
 //temperatureHeaterTarget = temperatureAppTarget;
 
-void controllerSet(char state) //2 = active, 1 = paused, 0 = inactive
+float getTemperatureHeaterTarget()
 {
+    return temperatureHeaterTarget;
+}
 
-    if (!controllerEnabled)
-    {
-        state = 0; //disable if not enabled by user
-    }
-    else if (!statusLidClosed)
-    {
-        state = 1; //pause if lid open
-    }
+char controllerState()
+{
+    return controllerCurrentState;
+}
 
+void controllerState(char state) //1 = active, 2 = paused, 0 = inactive
+{
     switch (state)
     {
-    case 2:
-        analogWrite(PIN_HEATER, (int)controllerOutputHeater);
-        digitalWrite(PIN_FAN, 1);
-        controllerState = 2;
-        break;
     case 1:
+        analogWrite(PIN_HEATER, (int)controllerOutputHeater);
+        controllerCurrentState = 1;
+        break;
+    case 2:
         analogWrite(PIN_HEATER, 0);
-        controllerState = 1;
+        controllerCurrentState = 2;
         break;
     case 0:
         analogWrite(PIN_HEATER, 0);
-        digitalWrite(PIN_FAN, 0);
-        controllerState = 0;
+        controllerCurrentState = 0;
         break;
     }
+}
+
+bool getControllerEnabled()
+{
+    return controllerEnabled;
 }
 
 void controllerEnable()
@@ -62,11 +65,11 @@ void controllerEnable()
 
 void controllerAppRun()
 {
-    if (controllerState == 2)
+    if (controllerState() == 1)
     {
-        errorCurrentApp = temperatureAppTarget - temperatureAppCurrent;
-        integral += errorCurrentApp * timingControllerApp;
-        derivative = (errorCurrentApp - errorLastApp) / timingControllerApp;
+        errorCurrentApp = temperatureAppTarget - getTemperatureAppCurrent();
+        integral += errorCurrentApp * TIMING_CONTROLLER_APP;
+        derivative = (errorCurrentApp - errorLastApp) / TIMING_CONTROLLER_APP;
 
         controllerOutputApp = kp * errorCurrentApp + ki * integral + kd * derivative;
 
@@ -75,7 +78,7 @@ void controllerAppRun()
         if (controllerOutputApp > controllerOutputLimitApp)
         {
             controllerOutputApp = controllerOutputLimitApp;
-            integral = integral - errorCurrentApp * timingControllerApp; //no i windup
+            integral = integral - errorCurrentApp * TIMING_CONTROLLER_APP; //no i windup
         }
 
         if (controllerOutputApp < 0)
@@ -88,9 +91,9 @@ void controllerAppRun()
 }
 void controllerHeaterRun()
 {
-    if (controllerState == 2)
+    if (controllerState() == 1)
     {
-        errorCurrentHeater = temperatureHeaterTarget - temperatureHeaterCurrent;
+        errorCurrentHeater = temperatureHeaterTarget - getTemperatureHeaterCurrent();
         if (errorCurrentHeater > 0)
         {
             controllerOutputHeater = controllerOutputLimitHeater;
@@ -104,9 +107,4 @@ void controllerHeaterRun()
     {
         controllerOutputHeater = 0;
     }
-}
-
-void setupController()
-{
-    attachInterrupt(digitalPinToInterrupt(PIN_ENC_SW), controllerEnable, FALLING);
 }

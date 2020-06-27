@@ -1,6 +1,5 @@
-#include <sensors.h>
-#include <definitions.h>
-#include <sharedVars.h>
+#include "sensors.h"
+#include "definitions.h"
 #include <DallasTemperature.h>
 #include <SPI.h>
 #include <SimpleDHT.h>
@@ -15,7 +14,7 @@ SimpleDHT22 sensorHumidity(PIN_SENSOR_HUMIDITY);
 Adafruit_INA219 sensorCurrent;
 
 //DS18 setup
-DeviceAddress appTemp1;// = {0x28, 0xDA, 0x0B, 0x79, 0x97, 0x20, 0x03, 0x2F}; //address of DS18B20 application temp sensor
+DeviceAddress appTemp1; // = {0x28, 0xDA, 0x0B, 0x79, 0x97, 0x20, 0x03, 0x2F}; //address of DS18B20 application temp sensor
 
 float temperatureAppCurrent;
 float temperatureHeaterCurrent;
@@ -28,14 +27,31 @@ float SH_a = 0.002241298;
 float SH_b = 0.000223227;
 float SH_c = 0.000000545;
 
-void getSensorData()
+float getTemperatureAppCurrent()
+{
+    return temperatureAppCurrent;
+}
+float getTemperatureHeaterCurrent()
+{
+    return temperatureHeaterCurrent;
+}
+float getHumidity()
+{
+    return humidity;
+}
+bool getStatusLidClosed()
+{
+    return statusLidClosed;
+}
+
+void updateSensorData()
 {
     //application temp
     //getSensorData should be timed so one conversion can happen in between two calls
 
     temperatureAppCurrent = sensorAppTemp.getTempC(appTemp1); //get temp from last conversion
-    sensorAppTemp.requestTemperaturesByAddress(appTemp1); //request new conversion
-    
+    sensorAppTemp.requestTemperaturesByAddress(appTemp1);     //request new conversion
+
     //heater temp
     temperatureHeaterCurrent = getNTCtemp();
 

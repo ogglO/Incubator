@@ -1,16 +1,59 @@
-#include <hw.h>
-#include <definitions.h>
 #include <Arduino.h>
-#include <sharedVars.h>
+#include "hwInterfaces.h"
+#include "definitions.h"
+#include "controller.h"
 
 //set all hw states except TFT
 //heater
 //lights
 //fan
 
+//encoder
+bool encoderALast;
+int16_t encoderValue;
+
 void setupPWM();
 
-void setupHW()
+//turn fan on or off
+void setFan(bool state)
+{
+    digitalWrite(PIN_FAN, state);
+}
+
+void setLight()
+{
+    digitalWrite(PIN_LED, !digitalRead(PIN_LED));
+}
+
+//evaluate encoder
+void evaluateEncoder()
+{
+
+    bool encA;
+    bool encB;
+
+    //encA = digitalRead(PIN_ENC_A); //switch to more basic readout if too slow
+    //encB = digitalRead(PIN_ENC_B);
+    encA = PIND & B00100000; //faster way (pin 2 is 2rd pin in register D. pin 3 3rd)
+    encB = PIND & B00001000;
+
+    //switch signs to change direction
+    if (encA != encoderALast)
+    { //if pinA changed
+        if (encA != encB)
+        { //increase if A=B (one click for KY-040)
+            encoderValue += 1;
+        }
+        else
+        { //decrase if A!=B
+            encoderValue -= 1;
+        }
+    }
+
+    encoderALast = encA;
+}
+
+void setupHWInterfaces()
 {
     pinMode(PIN_HEATER, OUTPUT); //define before changing pwm settings! (setupPWM)
     setupPWM();                  //set pwm to 20 kHz
@@ -28,6 +71,8 @@ void setupHW()
     analogWrite(PIN_HEATER, 0);
     digitalWrite(PIN_FAN, 0);
     digitalWrite(PIN_LED, 0);
+
+    attachInterrupt(digitalPinToInterrupt(PIN_ENC_SW), controllerEnable, FALLING);
 }
 
 void setupPWM()

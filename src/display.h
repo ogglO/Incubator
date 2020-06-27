@@ -1,6 +1,7 @@
 #pragma once
+
 #include <Arduino.h>
 
-void setupTFT();
+void setupDisplay();
 void drawDisplayStatic();
 void drawDisplayDynamic(int16_t counter);
