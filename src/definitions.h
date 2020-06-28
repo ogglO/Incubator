@@ -22,19 +22,18 @@
 #define SERIAL_BAUD 115200
 
 //timing
-#define TIMING_DISPLAY 30
-#define TIMING_SENSORS 1000
-#define TIMING_CONTROLLER_HEATER 1000
-#define TIMING_CONTROLLER_APP 6000
-#define TIMING_ENCODER 5
+#define TIMING_DISPLAY 50               //ms //interval between display redraws (only dynamic values)
+#define TIMING_SENSORS 1000             //ms //interval between sensor updates DS18B20 takes about 750ms! Non blocking request is updated next cycle, temp values are therefore min. this time old
+#define TIMING_CONTROLLER_HEATER 1000   //ms //interval between running the heater bang-bang-controller
+#define TIMING_CONTROLLER_APP 6000      //ms //interval between running the application pid-controller
 
 //controller
 #define CONTROLLER_KP 15.0
 #define CONTROLLER_KI 0.00004
 #define CONTROLLER_KD 0.0
-#define CONTROLLER_OUTPUT_LIMIT_HEATER 350
-#define CONTROLLER_OUTPUT_LIMIT_APP 80.0
-#define CONTROLLER_START_ACTIVE 1 //important in case of power outage
+#define CONTROLLER_OUTPUT_LIMIT_HEATER 350  //pwm //800 is max, defined in setupPWM()
+#define CONTROLLER_OUTPUT_LIMIT_APP 80.0    //°C //max. allowed heater temperature
+#define CONTROLLER_START_ACTIVE 1           //important in case of restart after power outage
 
 //application
 #define TEMPERATURE_APP_TARGET 37.5   //°C //application target temperature
