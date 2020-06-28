@@ -2,32 +2,87 @@
 #include "hwInterfaces.h"
 #include "definitions.h"
 #include "controller.h"
+#include "menu.h"
 
 //set all hw states except TFT
 //heater
 //lights
 //fan
 
+bool statusLight = LIGHT_ON_START_ENABLE;
+uint16_t timeSinceLightsOn = 0;
+
 //encoder
 bool encoderALast;
 int16_t encoderValue;
+volatile uint8_t encoderRegisteredClicks = 0;
+uint32_t encoderLastClick;
+volatile bool encoderDebouncing = 0;
 
 void setupPWM();
 void setupTimer2();
+void singleClick();
+void doubleClick();
+
+void singleClick()
+{
+    setLight();
+}
+
+void doubleClick(){
+
+};
+
+void encDebounce()
+{
+    encoderDebouncing = 0;
+}
+
+uint8_t getEncClicks()
+{
+    return encoderRegisteredClicks;
+}
+
+void encClickHandler()
+{
+    if (millis() - encoderLastClick >= ENCODER_RESET)
+    {
+        switch (encoderRegisteredClicks)
+        {
+        case 1:
+            singleClick();
+            break;
+        case 2:
+            doubleClick();
+            break;
+        }
+        encoderRegisteredClicks = 0;
+    }
+}
+
+void encClick()
+{
+    if (!encoderDebouncing)
+    {
+        encoderDebouncing = 1;
+        encoderRegisteredClicks += 1;
+        encoderLastClick = millis();
+    }
+}
 
 void stepperStep(uint16_t t_steps)
 {
-        controllerState(CONTROLLER_PAUSED);                         //pause controller
-        digitalWrite(PIN_STEPPER_DISABLE, 0);       //enable stepper
-        for (uint16_t i = 0; i < t_steps; i++ )      //step 
-        {
-            digitalWrite(PIN_STEPPER_STEP, 1),
+    controllerState(CONTROLLER_PAUSED);    //pause controller
+    digitalWrite(PIN_STEPPER_DISABLE, 0);  //enable stepper
+    for (uint16_t i = 0; i < t_steps; i++) //step
+    {
+        digitalWrite(PIN_STEPPER_STEP, 1),
             delayMicroseconds(STEPPER_PULSE_DURATION);
-            digitalWrite(PIN_STEPPER_STEP, 0);
-            delayMicroseconds(STEPPER_STEP_DELAY);
-        }
-        digitalWrite(PIN_STEPPER_DISABLE, 1);       //disable stepper
-        controllerState(CONTROLLER_ACTIVE);                         //reactivate controller
+        digitalWrite(PIN_STEPPER_STEP, 0);
+        delayMicroseconds(STEPPER_STEP_DELAY);
+    }
+    digitalWrite(PIN_STEPPER_DISABLE, 1); //disable stepper
+    controllerState(CONTROLLER_ACTIVE);   //reactivate controller
 }
 
 void setupTimer2(char t_counterInit)
@@ -54,6 +109,7 @@ void setupTimer2(char t_counterInit)
 ISR(TIMER2_OVF_vect)
 {
     evaluateEncoder();
+    encDebounce();
 }
 
 int16_t getEncoderValue()
@@ -69,8 +125,35 @@ void setFan(bool state)
 
 void setLight()
 {
-    digitalWrite(PIN_LED, !digitalRead(PIN_LED));
+    statusLight = !statusLight;
+    digitalWrite(PIN_LED, statusLight);
+    if(statusLight == 0)
+    {
+        timeSinceLightsOn = 0;
+    }
 }
+void setLight(bool t_state)
+{
+    statusLight = t_state;
+    digitalWrite(PIN_LED, statusLight);
+    if(statusLight == 0)
+    {
+        timeSinceLightsOn = 0;
+    }
+}
+
+void lightAutoOff()
+{
+    if (statusLight)
+    {
+        timeSinceLightsOn += 1;
+        if(timeSinceLightsOn >= LIGHT_AUTO_OFF_DELAY)
+        {
+            setLight(0);
+        }
+    }
+}
+
 
 //evaluate encoder
 void evaluateEncoder()
@@ -114,13 +197,14 @@ void setupHWInterfaces()
     setupPWM();     //set pwm to 20 kHz
     setupTimer2(0); //set timer 2 for timer interrupt encoder
 
-    digitalWrite(PIN_STEPPER_DISABLE, 1); //make sure stepper is disabled or motor will overheat
-    analogWrite(PIN_HEATER, 0);           //init with the heater turned off
-    digitalWrite(PIN_FAN, 0);             //init with fan turned off
-    digitalWrite(PIN_LED, 0);             //init with led turned off
+    digitalWrite(PIN_STEPPER_DISABLE, 1);          //make sure stepper is disabled or motor will overheat
+    analogWrite(PIN_HEATER, 0);                    //init with the heater turned off
+    digitalWrite(PIN_FAN, 0);                      //init with fan turned off
+    digitalWrite(PIN_LED, LIGHT_ON_START_ENABLE); //init LED
 
     //attach interrupt to encoder button
-    attachInterrupt(digitalPinToInterrupt(PIN_ENC_SW), controllerEnable, FALLING);
+    //attachInterrupt(digitalPinToInterrupt(PIN_ENC_SW), controllerEnable, FALLING);
+    attachInterrupt(digitalPinToInterrupt(PIN_ENC_SW), encClick, FALLING);
 }
 
 void setupPWM()

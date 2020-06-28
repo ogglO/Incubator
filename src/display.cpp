@@ -3,6 +3,7 @@
 #include "controller.h"
 #include "sensors.h"
 #include "appHelpers.h"
+#include "hwInterfaces.h"
 #include <Adafruit_GFX.h>    // Adafruit Grafik-Bibliothek
 #include <Adafruit_ST7735.h> // Adafruit ST7735-Bibliothek
 
@@ -67,9 +68,16 @@ void drawDisplayDynamic(int16_t counter)
 
     //Stepper
     currentY += (2 + 8) * textSize;
-    TFT.setCursor(getPosFromRight(5), currentY);
-    TFT.print(getTimeUntilRotation());
-    TFT.print(" m");
+    TFT.setCursor(getPosFromRight(7), currentY);
+    if(!ROTATION_ENABLED)
+    {
+        TFT.print("inaktiv");
+    }
+    else
+    { 
+        TFT.print(getTimeUntilRotation());
+        TFT.print(" m");
+    }
 
     //lid status
     currentY += (2 + 8) * textSize;
@@ -107,7 +115,8 @@ void drawDisplayDynamic(int16_t counter)
     //debug counter
     currentY += (2 + 8) * textSize;
     TFT.setCursor(getPosFromRight(8), currentY);
-    TFT.print(counter);
+    //TFT.print(counter);
+    TFT.print(getEncClicks());
 
     //application temperature
     TFT.setCursor(48, 10);

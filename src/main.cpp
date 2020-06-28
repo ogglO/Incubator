@@ -4,23 +4,23 @@
 #include "display.h"
 #include "sensors.h"
 #include "controller.h"
-#include <appHelpers.h>
+#include "appHelpers.h"
 
 //timing
+const uint16_t timingEncoder = ENCODER_RESET;
 const uint16_t timingDisplay = TIMING_DISPLAY;                    //ms //draw only dynamics //draw statics on toggling display LED
 const uint16_t timingSensors = TIMING_SENSORS;                    //ms //read data then request for next round
 const uint16_t timingControllerHeater = TIMING_CONTROLLER_HEATER; //ms //inner control loop
 const uint16_t timingControllerApp = TIMING_CONTROLLER_APP;       //ms //outer controll loop
-const uint16_t timingSecond = 1000;                                //ms // timer for stats and motor and ....
+const uint16_t timingSecond = 1000;                               //ms // timer for stats and motor and ....
 
 //timing vars
+uint32_t timingEncoderLast;
 uint32_t timingDisplayLast;
 uint32_t timingSensorsLast;
 uint32_t timingControllerHeaterLast;
 uint32_t timingControllerAppLast;
 uint32_t timingSecondLast;
-
-bool firstStartup = 1;
 
 void setup()
 {
@@ -31,7 +31,6 @@ void setup()
     setupDisplay();
 
     digitalWrite(PIN_TFT_BACKLIGHT, 1);
-
     drawDisplayStatic();
 }
 
@@ -39,21 +38,34 @@ void loop()
 {
     watchman();
 
-    if ((millis() - timingDisplayLast) >= timingDisplay)
+    if ((millis() - timingEncoderLast) >= timingEncoder)
+    {
+        encClickHandler();
+        timingEncoderLast = millis();
+    }
+    else if ((millis() - timingDisplayLast) >= timingDisplay)
     {
         drawDisplayDynamic(getEncoderValue());
         timingDisplayLast = millis();
     }
     else if ((millis() - timingSecondLast) >= timingSecond)
     {
-        rotate();
+        if (ROTATION_ENABLED)
+        {
+            rotate();
+        }
+        if (LIGHT_AUTO_OFF)
+        {
+            lightAutoOff();
+        }
+
         timingSecondLast = millis();
     }
     else if ((millis() - timingSensorsLast) >= timingSensors)
     {
-        controllerState(2); //pause
+        controllerState(CONTROLLER_PAUSED); //pause
         updateSensorData();
-        controllerState(1); //reactivate;
+        controllerState(CONTROLLER_ACTIVE); //reactivate;
         timingSensorsLast = millis();
     }
     else if ((millis() - timingControllerHeaterLast) >= timingControllerHeater)
@@ -65,10 +77,5 @@ void loop()
     {
         controllerAppRun();
         timingControllerAppLast = millis();
-    }
-
-    if (firstStartup)
-    {
-        firstStartup = 0;
     }
 }
