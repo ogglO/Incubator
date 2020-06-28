@@ -11,14 +11,14 @@ const uint16_t timingDisplay = TIMING_DISPLAY;                    //ms //draw on
 const uint16_t timingSensors = TIMING_SENSORS;                    //ms //read data then request for next round
 const uint16_t timingControllerHeater = TIMING_CONTROLLER_HEATER; //ms //inner control loop
 const uint16_t timingControllerApp = TIMING_CONTROLLER_APP;       //ms //outer controll loop
-const uint16_t timingStats = 1000;
+const uint16_t timingSecond = 1000;                                //ms // timer for stats and motor and ....
 
 //timing vars
 uint32_t timingDisplayLast;
 uint32_t timingSensorsLast;
 uint32_t timingControllerHeaterLast;
 uint32_t timingControllerAppLast;
-uint32_t timingStatsLast;
+uint32_t timingSecondLast;
 
 bool firstStartup = 1;
 
@@ -44,10 +44,10 @@ void loop()
         drawDisplayDynamic(getEncoderValue());
         timingDisplayLast = millis();
     }
-    else if ((millis() - timingStatsLast) >= timingStats)
+    else if ((millis() - timingSecondLast) >= timingSecond)
     {
-        //do stats here
-        timingStatsLast = millis();
+        rotate();
+        timingSecondLast = millis();
     }
     else if ((millis() - timingSensorsLast) >= timingSensors)
     {

@@ -34,10 +34,20 @@
 #define CONTROLLER_OUTPUT_LIMIT_HEATER 350  //pwm //800 is max, defined in setupPWM()
 #define CONTROLLER_OUTPUT_LIMIT_APP 80.0    //°C //max. allowed heater temperature
 #define CONTROLLER_START_ACTIVE 1           //important in case of restart after power outage
+//do not change
+#define CONTROLLER_ACTIVE 1
+#define CONTROLLER_INACTIVE 0
+#define CONTROLLER_PAUSED 2
 
 //application
-#define TEMPERATURE_APP_TARGET 37.5   //°C //application target temperature
-#define TEMPERATURE_APP_TOLERANCE 0.2 //display temperature in green if within +- this tolerance
+#define TEMPERATURE_APP_TARGET 37.5     //°C //application target temperature
+#define TEMPERATURE_APP_TOLERANCE 0.2   //display temperature in green if within +- this tolerance
+#define ROTATION_INTERVAL 3             //min //interval between rotations
+#define ROTATION_STEPS 10000             //steps //stepper steps every time the rotation interval runs out
 
 //other
 #define DISPLAY_IDLE_TIME 60 //s //display turns off after this time has passed without input
+
+//stepper detail
+#define STEPPER_PULSE_DURATION 50   //µs //time between on and off pulse
+#define STEPPER_STEP_DELAY  500     //µs //stepper speed (time between two steps)

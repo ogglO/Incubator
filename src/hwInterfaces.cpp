@@ -15,6 +15,21 @@ int16_t encoderValue;
 void setupPWM();
 void setupTimer2();
 
+void stepperStep(uint16_t t_steps)
+{
+        controllerState(CONTROLLER_PAUSED);                         //pause controller
+        digitalWrite(PIN_STEPPER_DISABLE, 0);       //enable stepper
+        for (uint16_t i = 0; i < t_steps; i++ )      //step 
+        {
+            digitalWrite(PIN_STEPPER_STEP, 1),
+            delayMicroseconds(STEPPER_PULSE_DURATION);
+            digitalWrite(PIN_STEPPER_STEP, 0);
+            delayMicroseconds(STEPPER_STEP_DELAY);
+        }
+        digitalWrite(PIN_STEPPER_DISABLE, 1);       //disable stepper
+        controllerState(CONTROLLER_ACTIVE);                         //reactivate controller
+}
+
 void setupTimer2(char t_counterInit)
 {
     //https://busylog.net/arduino-timer-interrupt-isr-example/

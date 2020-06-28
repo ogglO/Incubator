@@ -34,21 +34,21 @@ char controllerState()
     return controllerCurrentState;
 }
 
-void controllerState(char state) //1 = active, 2 = paused, 0 = inactive
+void controllerState(char state)
 {
     switch (state)
     {
-    case 1:
+    case CONTROLLER_ACTIVE:
         analogWrite(PIN_HEATER, (int)controllerOutputHeater);
-        controllerCurrentState = 1;
+        controllerCurrentState = CONTROLLER_ACTIVE;
         break;
-    case 2:
+    case CONTROLLER_PAUSED:
         analogWrite(PIN_HEATER, 0);
-        controllerCurrentState = 2;
+        controllerCurrentState = CONTROLLER_PAUSED;
         break;
-    case 0:
+    case CONTROLLER_INACTIVE:
         analogWrite(PIN_HEATER, 0);
-        controllerCurrentState = 0;
+        controllerCurrentState = CONTROLLER_INACTIVE;
         break;
     }
 }

@@ -8,3 +8,4 @@ void setHeater(uint16_t pwm);
 void setMotor(uint16_t steps);
 void evaluateEncoder();
 int16_t getEncoderValue();
+void stepperStep(uint16_t t_steps);

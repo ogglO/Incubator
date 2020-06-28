@@ -2,6 +2,7 @@
 #include "definitions.h"
 #include "controller.h"
 #include "sensors.h"
+#include "appHelpers.h"
 #include <Adafruit_GFX.h>    // Adafruit Grafik-Bibliothek
 #include <Adafruit_ST7735.h> // Adafruit ST7735-Bibliothek
 
@@ -67,7 +68,8 @@ void drawDisplayDynamic(int16_t counter)
     //Stepper
     currentY += (2 + 8) * textSize;
     TFT.setCursor(getPosFromRight(5), currentY);
-    TFT.print("300 s");
+    TFT.print(getTimeUntilRotation());
+    TFT.print(" m");
 
     //lid status
     currentY += (2 + 8) * textSize;
@@ -88,15 +90,15 @@ void drawDisplayDynamic(int16_t counter)
     TFT.setCursor(getPosFromRight(8), currentY);
     switch (controllerState())
     {
-    case 0:
+    case CONTROLLER_INACTIVE:
         TFT.setTextColor(ST77XX_RED, bgColor);
         TFT.print(" inaktiv");
         break;
-    case 2:
+    case CONTROLLER_PAUSED:
         TFT.setTextColor(ST77XX_YELLOW, bgColor);
         TFT.print("pausiert");
         break;
-    case 1:
+    case CONTROLLER_ACTIVE:
         TFT.setTextColor(ST77XX_GREEN, bgColor);
         TFT.print("   aktiv");
         break;
