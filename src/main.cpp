@@ -12,7 +12,7 @@ const uint16_t timingDisplay = TIMING_DISPLAY;                    //ms //draw on
 const uint16_t timingSensors = TIMING_SENSORS;                    //ms //read data then request for next round
 const uint16_t timingControllerHeater = TIMING_CONTROLLER_HEATER; //ms //inner control loop
 const uint16_t timingControllerApp = TIMING_CONTROLLER_APP;       //ms //outer controll loop
-const uint16_t timingSecond = 1000;                               //ms // timer for stats and motor and ....
+const uint16_t timingSecond = 925;                               //ms // timer for stats and motor and ....
 
 //timing vars
 uint32_t timingEncoderLast;
@@ -29,6 +29,7 @@ void setup()
     setupHWInterfaces();
     setupSensors();
     setupDisplay();
+    setupController();
 
     digitalWrite(PIN_TFT_BACKLIGHT, 1);
     drawDisplayStatic();
@@ -45,16 +46,15 @@ void loop()
     }
     else if ((millis() - timingDisplayLast) >= timingDisplay)
     {
-        drawDisplayDynamic(getEncoderValue());
+        drawDisplayDynamic();
         timingDisplayLast = millis();
     }
     else if ((millis() - timingSecondLast) >= timingSecond)
     {
-        if (ROTATION_ENABLED)
-        {
-            rotate();
-        }
-        if (LIGHT_AUTO_OFF)
+        rotate();
+        oneSecondTicker();
+
+        if (LIGHT_AUTO_OFF_DELAY > 0)
         {
             lightAutoOff();
         }

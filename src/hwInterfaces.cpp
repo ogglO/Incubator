@@ -3,6 +3,7 @@
 #include "definitions.h"
 #include "controller.h"
 #include "menu.h"
+#include "appHelpers.h"
 
 //set all hw states except TFT
 //heater
@@ -23,15 +24,32 @@ void setupPWM();
 void setupTimer2();
 void singleClick();
 void doubleClick();
+void tripleClick();
 
 void singleClick()
 {
+    /*if(menuIsOpen())
+    {
+        menuSingleClick();
+    }
+    else
+    {
+        setLight();
+    }*/
     setLight();
 }
 
-void doubleClick(){
+void doubleClick()
+{
+    //menuDoubleClick();
+    rotationEnable();
+}
 
-};
+void tripleClick()
+{
+    //menuTripleClick();
+    controllerEnable();
+}
 
 void encDebounce()
 {
@@ -54,6 +72,9 @@ void encClickHandler()
             break;
         case 2:
             doubleClick();
+            break;
+        case 3:
+            tripleClick();
             break;
         }
         encoderRegisteredClicks = 0;
@@ -172,10 +193,12 @@ void evaluateEncoder()
         if (encA != encB)
         { //increase if A=B (one click for KY-040)
             encoderValue += 1;
+            menuUp();
         }
         else
         { //decrase if A!=B
             encoderValue -= 1;
+            menuDown();
         }
     }
 

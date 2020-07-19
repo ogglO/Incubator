@@ -4,10 +4,12 @@
 #include "sensors.h"
 #include "appHelpers.h"
 #include "hwInterfaces.h"
+#include "menu.h"
 #include <Adafruit_GFX.h>    // Adafruit Grafik-Bibliothek
 #include <Adafruit_ST7735.h> // Adafruit ST7735-Bibliothek
 
 uint16_t getPosFromRight(uint16_t characters);
+uint8_t getSpacesTo1000(uint16_t number);
 
 Adafruit_ST7735 TFT = Adafruit_ST7735(PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST);
 
@@ -32,7 +34,7 @@ void setupDisplay()
     TFT.setTextColor(fgColor, bgColor); //set default colors
 }
 
-void drawDisplayDynamic(int16_t counter)
+void drawDisplayDynamic()
 {
     //initial values
     TFT.setTextColor(fgColor, bgColor);
@@ -41,15 +43,42 @@ void drawDisplayDynamic(int16_t counter)
     TFT.setTextSize(textSize = 1);
 
     //app temperature change
+    /*
     currentY += (2 + 8) * textSize; //2 free space at textSize=1, 8 text height at textSize=1
-    currentY += 25;                 //Space
+    currentY += 25;                 //Space //41
     TFT.drawCircle(currentX + 3, currentY + 3, 3, ST77XX_GREEN);
     TFT.setCursor((currentX + 3) + 3 + 1 + 1, currentY); //circle middle +radius +linewidth +space
     TFT.print("0.07");
+    */
+
+    //menu Y41
+
+    currentY = 70;
+    TFT.setCursor(currentX = minX, currentY);
+    TFT.setTextColor(fgColor, bgColor);
+
+    if (menuIsOpen())
+    {
+        TFT.print(getCurrentItem());
+        TFT.print(" ");
+        if (menuItemIsActive())
+        {
+            TFT.setTextColor(ST77XX_BLUE, bgColor);
+        }
+
+        TFT.print(getCurrentValue());
+        //TFT.print("inaktiv");
+    }
+    else
+    {
+        TFT.print("                    ");
+    }
 
     //heater temperature
+    TFT.setTextColor(fgColor, bgColor);
     currentY += (2 + 8) * textSize;
-    currentY += 40;
+    currentY += 40; //91
+    currentY = 91;
     TFT.setCursor(getPosFromRight(11), currentY);
     TFT.print(getTemperatureHeaterCurrent(), 1);
     TFT.print("/");
@@ -69,15 +98,26 @@ void drawDisplayDynamic(int16_t counter)
     //Stepper
     currentY += (2 + 8) * textSize;
     TFT.setCursor(getPosFromRight(7), currentY);
-    if(!ROTATION_ENABLED)
+    if (!getRotationStatus())
     {
+        TFT.setTextColor(ST77XX_RED, bgColor);
         TFT.print("inaktiv");
     }
     else
-    { 
+    {
+        TFT.setCursor(getPosFromRight(7), currentY);
+        TFT.print(" ");
+        for (uint8_t i = 0; i < getSpacesTo1000(getTimeUntilRotation()); i++)
+        {
+            TFT.print(" ");
+        }
         TFT.print(getTimeUntilRotation());
-        TFT.print(" m");
+        TFT.setCursor(getPosFromRight(2), currentY);
+        TFT.print(" ");
+        TFT.print(getRotationIntervalUnit());
     }
+
+    TFT.setTextColor(fgColor, bgColor);
 
     //lid status
     currentY += (2 + 8) * textSize;
@@ -116,7 +156,7 @@ void drawDisplayDynamic(int16_t counter)
     currentY += (2 + 8) * textSize;
     TFT.setCursor(getPosFromRight(8), currentY);
     //TFT.print(counter);
-    TFT.print(getEncClicks());
+    //TFT.print(getEncClicks());
 
     //application temperature
     TFT.setCursor(48, 10);
@@ -153,11 +193,12 @@ void drawDisplayStatic()
     TFT.print("[C]");
 
     //stability value
+
     currentY += 25; //Space
     //draw change status circle and print change rate
     currentY += (2 + 8) * textSize;
     TFT.setCursor(currentX, currentY);
-    TFT.print("C/60s");
+    //TFT.print("C/60s");
 
     //Additional info
     currentY += 40;
@@ -206,3 +247,21 @@ void drawDisplayDynamic(int16_t counter)
     TFT.setTextSize(3);
     TFT.print(counter);
 };*/
+
+uint8_t getSpacesTo1000(uint16_t number)
+{
+    uint8_t spaces = 0;
+    if (number < 1000)
+    {
+        spaces += 1;
+    }
+    if (number < 100)
+    {
+        spaces += 1;
+    }
+    if (number < 10)
+    {
+        spaces += 1;
+    }
+    return spaces;
+}

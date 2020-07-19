@@ -24,6 +24,11 @@ float integral;
 //set inital value for inner control loop
 //temperatureHeaterTarget = temperatureAppTarget;
 
+void setupController()
+{
+    integral = TEMPERATURE_APP_TARGET * 85000.0 - 2066000; //calculated from integral value in stable condition at 37.5 °C. Assumption i is 0 at 24 °C. Slope lowered to avoid overshoot.
+}
+
 float getTemperatureHeaterTarget()
 {
     return temperatureHeaterTarget;

@@ -34,25 +34,28 @@
 #define CONTROLLER_KD 0.0
 #define CONTROLLER_OUTPUT_LIMIT_HEATER 350 //pwm //800 is max, defined in setupPWM()
 #define CONTROLLER_OUTPUT_LIMIT_APP 80.0   //°C //max. allowed heater temperature
-#define CONTROLLER_START_ACTIVE 0          //important in case of restart after power outage
+#define CONTROLLER_START_ACTIVE 1          //important in case of restart after power outage
+#define CONTROLLER_RESTART_DELAY 60         //s //after controller pause wait this long while running the fan before restarting controller
+
 //do not change
 #define CONTROLLER_ACTIVE 1
 #define CONTROLLER_INACTIVE 0
 #define CONTROLLER_PAUSED 2
 
 //application
-#define TEMPERATURE_APP_TARGET 37.5   //°C //application target temperature
+#define TEMPERATURE_APP_TARGET 37.6   //°C //application target temperature
 #define TEMPERATURE_APP_TOLERANCE 0.2 //display temperature in green if within +- this tolerance
-#define ROTATION_ENABLED 0            //enable or disable rotation
-#define ROTATION_INTERVAL 3           //min //interval between rotations
-#define ROTATION_STEPS 10000          //steps //stepper steps every time the rotation interval runs out
+#define ROTATION_INTERVAL 60 * 4           //min //interval between rotations
+#define ROTATION_STEPS 8000          //steps //stepper steps every time the rotation interval runs out
+#define ROTATION_ENABLED 1          //start with rotation active
 
 //other
-#define DISPLAY_IDLE_TIME 60      //s //display turns off after this time has passed without input
-#define ENCODER_RESET 180         //ms //time after encoder click counter resets
-#define LIGHT_ON_START_ENABLE 0  //start with lights active?
-#define LIGHT_AUTO_OFF 1         //s //if enabled lights will turn off after defined delay
-#define LIGHT_AUTO_OFF_DELAY 10 //s //seconds until lights turn off automatically
+#define DISPLAY_IDLE_TIME 60         //s //display turns off after this time has passed without input
+#define ENCODER_RESET 180            //ms //time after encoder click counter resets
+#define LIGHT_ON_START_ENABLE 0      //start with lights active?
+#define LIGHT_AUTO_OFF_DELAY 30      //s //seconds until lights turn off automatically //0 to disable
+#define LIGHT_AUTO_OFF_DELAY_MAX 60  //s //max settable delay before roll-over
+#define LIGHT_AUTO_OFF_DELAY_STEPS 5 //s //amount of change for every encoder click
 
 //stepper detail
 #define STEPPER_PULSE_DURATION 50 //µs //time between on and off pulse
